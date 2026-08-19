@@ -75,35 +75,51 @@ async function scanURL() {
 
 
         // Check whether URL is available
-
         if (!url) {
-
-            throw new Error(
-                "Could not read the current URL."
-            );
-
+            throw new Error("Could not read the current URL.");
         }
 
+        // ======================================
+        // Handle Internal Browser Pages (edge://, chrome://, about:, etc.)
+        // ======================================
+        const isInternalPage = (
+            url.startsWith("edge://") ||
+            url.startsWith("chrome://") ||
+            url.startsWith("about:") ||
+            url.startsWith("brave://") ||
+            url.startsWith("opera://") ||
+            url.startsWith("chrome-extension://") ||
+            url.startsWith("edge-extension://") ||
+            url.startsWith("file://") ||
+            url.startsWith("devtools://") ||
+            url.startsWith("view-source:")
+        );
+
+        if (isInternalPage) {
+            statusIconElement.textContent = "🛡️";
+            resultElement.textContent = "BROWSER SYSTEM PAGE";
+            riskElement.innerHTML = '<span style="color: #10b981; font-weight: 600;">SAFE (Internal Page)</span>';
+            phishingProbabilityElement.textContent = "0%";
+            phishingBarElement.style.width = "0%";
+            return;
+        }
 
         // ======================================
         // Send URL to FastAPI backend
         // ======================================
-
         const response = await fetch(
             API_URL,
             {
                 method: "POST",
-
                 headers: {
-                    "Content-Type":
-                        "application/json"
+                    "Content-Type": "application/json"
                 },
-
                 body: JSON.stringify({
                     url: url
                 })
             }
         );
+
 
 
         // Check HTTP response
